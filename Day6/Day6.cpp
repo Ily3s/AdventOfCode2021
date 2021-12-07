@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <fstream>
 
 /*
 Defining macros to be able to switch from example to input
@@ -16,14 +15,20 @@ and from part 1 to part 2 easily
 #define DAY 256
 #endif
 
+// defining the input file
+#if EXAMPLE == 1
+#define IN_FILE "example.txt"
+#elif EXAMPLE == 0
+#define IN_FILE "input.txt"
+#endif
+
 // A list of lanternfishes's timers/grades stored as chars not to waste memory
-std::vector<unsigned char> lanternfishes;
+unsigned char lanternfishes[] = {
+#include IN_FILE
+};
 
 // The numbers of fishes in each grade of the school
 unsigned long long school[9] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-// transfer data from "input.txt" or "example.txt" to lanterfishes
-void get_input();
 
 // transfer data from lanternfishes to school
 void build_school();
@@ -34,7 +39,6 @@ void new_day();
 int main()
 {
 
-	get_input();
 	build_school();
 
 	for(short s = 0; s < DAY; s++)
@@ -48,39 +52,10 @@ int main()
 
 }
 
-void get_input()
-{
-
-	#if EXAMPLE == 1
-	std::ifstream input_file{"example.txt"};
-	#elif EXAMPLE == 0
-	std::ifstream input_file{"input.txt"};
-	#endif
-
-	char c;
-	bool b = true;
-
-	while(!input_file.eof())
-	{
-		if(b)
-		{
-			input_file.get(c);
-			lanternfishes.push_back(c - '0');
-			b = false;
-		}
-		else
-		{
-			input_file.get();
-			b = true;
-		}
-	}
-
-}
-
 void build_school()
 {
-	for(unsigned char fish : lanternfishes)
-		school[fish]++;
+	for(unsigned short s = 0; s < sizeof(lanternfishes); s++)
+		school[lanternfishes[s]]++;
 }
 
 void new_day()
