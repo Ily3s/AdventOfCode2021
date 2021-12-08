@@ -8,14 +8,19 @@
 Defining macros to be able to switch from example to input
 and from part 1 to part 2 easily
 */
-#define PART 1 			// define as 1 to output part 1
+#define PART 2 			// define as 1 to sum part 1
 #define EXAMPLE 0 		// define as 1 to take input in the example
 
 std::vector<std::string> input_vector;
+
+/*
+	7*6*5*4*3*2*1 = 5040 possible "traducing" keys
+	1 key = 7 char defined as : a = key[0], b = key[1] etc.
+*/
 char possibilities[5040][7];
 
-void get_input();
-void build_possibilities();
+void get_input();			// get input from the files
+void build_possibilities();	// build all the possible keys in possibilities
 
 int main()
 {
@@ -46,12 +51,13 @@ int main()
 
 	build_possibilities();
 
-	unsigned int output = 0;
+	unsigned int sum = 0;	// the final sum that need to be printed
 
 	for(const std::string& str : input_vector)
 	{
+		// initializing variables that will be filled directly from the input
+
 		std::string uncoder{str.cbegin(), str.cbegin() + str.find('|')};
-		std::string copy = uncoder;
 		std::string digits{str.cbegin() + str.find('|') + 2, str.cend()};
 		digits.push_back(' ');
 
@@ -59,9 +65,11 @@ int main()
 		std::vector<std::string> sixties;
 		std::vector<std::string> fifties;
 
+		// filling these variables
+
 		for(short i = 0; i < 10; i++)
 		{
-			std::string digit{copy.begin(), copy.begin() + copy.find(' ')};
+			std::string digit{uncoder.begin(), uncoder.begin() + uncoder.find(' ')};
 
 			if(digit.size() == 2)
 				one = digit;
@@ -76,20 +84,33 @@ int main()
 			else
 				fifties.push_back(digit);
 
-			copy.erase(copy.begin(), copy.begin() + copy.find(' ') + 1);
+			uncoder.erase(uncoder.begin(), uncoder.begin() + uncoder.find(' ') + 1);
 		}
 
+		unsigned short key; // the index of the correct key in possibilities
+
+		// defining marcos so that the upcoming code will make more sense
+
+		#define a possibilities[key][0]
+		#define b possibilities[key][1]
+		#define c possibilities[key][2]
+		#define d possibilities[key][3]
+		#define e possibilities[key][4]
+		#define f possibilities[key][5]
+		#define g possibilities[key][6]
+		#define N_FIND(var, seg) var.find(seg) == -1
+		#define FIND(var, seg) !N_FIND(var, seg)
+
+		/* 
+			finding out the good key by looking at each possibility
+			we will check if the possibility make sense with each digits
+			except the digit eight because we know it contains all the segments anyway
+		*/
 		for(unsigned short i = 0; i < 5040; i++)
 		{
-			#define a possibilities[i][0]
-			#define b possibilities[i][1]
-			#define c possibilities[i][2]
-			#define d possibilities[i][3]
-			#define e possibilities[i][4]
-			#define f possibilities[i][5]
-			#define g possibilities[i][6]
-			#define N_FIND(var, seg) var.find(seg) == -1
-			#define FIND(var, seg) !N_FIND(var, seg)
+			key = i; // assigning the key as the loop index
+
+			// starting by the simplest, seven, four and one are arleady known
 
 			if(N_FIND(seven, a) || N_FIND(seven, c) || N_FIND(seven, f))
 				continue;
@@ -98,6 +119,10 @@ int main()
 			if(N_FIND(one, c) || N_FIND(one, f))
 				continue;
 
+			/*
+				then, the only information we have on digits that are five or six segments long is :
+				we must have one of each, so we look through them and see if that condition is respected
+			*/
 			bool zer = false, six = false, nine = false;
 			for(const auto& six_len : sixties)
 			{
@@ -121,46 +146,49 @@ int main()
 				else if(N_FIND(fiv_len, b) && N_FIND(fiv_len, e))
 					three = true;
 			}
-
 			if(!(five && two && three))
 				continue;
 
-			uncoder = {possibilities[i], 7};
+			// Then if all the conditions are respected, we don't change the key anymore, it's the right one
+
 			break;
 		}
+
+		// finally, we "traduce" the four digits of the line using the key
+		// and we directly add up each digit value multiplied to a power of ten to the final sum
 
 		for(short i = 0; i < 4; i++)
 		{
 			std::string digit{digits.begin(), digits.begin() + digits.find(' ')};
 
 			if(digit.size() == 2)
-				output += std::pow(10, 3-i);
+				sum += std::pow(10, 3-i);
 			else if(digit.size() == 3)
-				output += 7 * std::pow(10, 3-i);
+				sum += 7 * std::pow(10, 3-i);
 			else if(digit.size() == 4)
-				output += 4 * std::pow(10, 3-i);
+				sum += 4 * std::pow(10, 3-i);
 			else if(digit.size() == 7)
-				output += 8 * std::pow(10, 3-i);
+				sum += 8 * std::pow(10, 3-i);
 			else if(digit.size() == 6)
 			{
-				if(N_FIND(digit, uncoder[4]))
-					output += 9 * std::pow(10, 3-i);
-				else if(N_FIND(digit, uncoder[2]))
-					output += 6 * std::pow(10, 3-i);
+				if(N_FIND(digit, e))
+					sum += 9 * std::pow(10, 3-i);
+				else if(N_FIND(digit, c))
+					sum += 6 * std::pow(10, 3-i);
 			}
-			else if(N_FIND(digit, uncoder[2]))
-				output += 5 * std::pow(10, 3-i);
-			else if(N_FIND(digit, uncoder[4]))
-				output += 3 * std::pow(10, 3-i);
+			else if(N_FIND(digit, c))
+				sum += 5 * std::pow(10, 3-i);
+			else if(N_FIND(digit, e))
+				sum += 3 * std::pow(10, 3-i);
 			else
-				output += 2 * std::pow(10, 3-i);
+				sum += 2 * std::pow(10, 3-i);
 
 			digits.erase(digits.begin(), digits.begin() + digits.find(' ') + 1);
 		}
 
 	}
 
-	std::cout << output << std::endl;
+	std::cout << sum << std::endl;
 
 	#endif
 
