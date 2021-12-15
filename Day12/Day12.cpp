@@ -94,6 +94,8 @@ void get_input()
 
 	std::string line;
 
+	connexions.reserve(25);
+
 	while(std::getline(input_file, line))
 	{
 		std::string cave1{line.begin(), line.begin() + line.find('-')};
