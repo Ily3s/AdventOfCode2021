@@ -7,7 +7,7 @@
 Defining macros to be able to switch from example to input
 and from part 1 to part 2 easily
 */
-#define PART 1			// define as 1 to output part 1
+#define PART 2			// define as 1 to output part 1
 #define EXAMPLE 0 		// define as 1 to take input in the example
 
 using ushort = unsigned short;
@@ -32,7 +32,7 @@ int main()
 
 	get_input();
 	
-	for (ushort i = 0; i < 50; i++)
+	for (ushort i = 0; i < 2+PART*48; i++)
 	{
 		resize_image();
 		enhance_image();
