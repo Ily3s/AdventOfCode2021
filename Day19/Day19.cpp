@@ -10,11 +10,10 @@
 Defining macros to be able to switch from example to input
 and from part 1 to part 2 easily
 */
-#define PART 1			// define as 1 to output part 1
+#define PART 2			// define as 1 to output part 1
 #define EXAMPLE 0 		// define as 1 to take input in the example
 
 using ushort = unsigned short;
-using ull_int = unsigned long long int;
 
 struct Vec3
 {
@@ -37,6 +36,16 @@ struct Vec3
 		return Vec3(x - p.x, y - p.y, z - p.z);
 	}
 };
+
+Vec3 abs(const Vec3& vec)
+{
+	return { std::abs(vec.x), std::abs(vec.y), std::abs(vec.z) };
+}
+
+int sum(const Vec3& vec)
+{
+	return vec.x + vec.y + vec.z;
+}
 
 namespace std
 {
@@ -96,6 +105,7 @@ void compute_b2b_vecs();
 Vec3 reverse_transform(const Scanner& scan, ushort vec_index);
 void make_scanners_abs();
 void build_beacons();
+unsigned int largest_manhattan_distance();
 
 int main()
 {
@@ -103,9 +113,17 @@ int main()
 	get_input();
 	compute_b2b_vecs();
 	make_scanners_abs();
-	build_beacons();
 
+	#if PART == 1
+
+	build_beacons();
 	std::cout << beacons.size() << std::endl;
+
+	#elif PART == 2
+
+	std::cout << largest_manhattan_distance() << std::endl;
+
+	#endif
 
 }
 
@@ -257,4 +275,20 @@ void build_beacons()
 			beacons.insert(beacon_abs);
 		}
 	}
+}
+
+unsigned int largest_manhattan_distance()
+{
+	unsigned int largest_dist = 0;
+
+	for (const Scanner& scan1 : scanners)
+	{
+		for (const Scanner& scan2 : scanners)
+		{
+			unsigned int manhattan_dist = sum(abs(scan1.pos - scan2.pos));
+			largest_dist = manhattan_dist > largest_dist ? manhattan_dist : largest_dist;
+		}
+	}
+
+	return largest_dist;
 }
