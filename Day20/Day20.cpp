@@ -7,44 +7,47 @@
 Defining macros to be able to switch from example to input
 and from part 1 to part 2 easily
 */
-#define PART 2			// define as 1 to output part 1
-#define EXAMPLE 1 		// define as 1 to take input in the example
+#define PART 1			// define as 1 to output part 1
+#define EXAMPLE 0 		// define as 1 to take input in the example
 
 using ushort = unsigned short;
 using ull_int = unsigned long long int;
 
 std::string program;
 
-using Image = std::vector<std::vector<char>>;
+using Image = std::vector<std::string>;
 
 Image image;
+char back_ground = '0';
 
 void get_input();
 void resize_image();
 void enhance_image();
-size_t white_pixels();
+size_t white_pixels(const Image& img);
+
+std::ostream& operator<<(std::ostream& os, const Image& img);
 
 int main()
 {
 
 	get_input();
-
-	for (ushort i = 0; i < 2; i++)
+	
+	for (ushort i = 0; i < 50; i++)
 	{
 		resize_image();
 		enhance_image();
 	}
 
-	std::cout << white_pixels() << std::endl;
+	std::cout << white_pixels(image) << std::endl;
 
 }
 
 void get_input()
 {
 	#if EXAMPLE == 1
-	std::ifstream input_file{"example.txt"};
+	std::ifstream input_file{ "example.txt" };
 	#elif EXAMPLE == 0
-	std::ifstream input_file{"input.txt"};
+	std::ifstream input_file{ "input.txt" };
 	#endif
 
 	std::string line;
@@ -73,62 +76,55 @@ void resize_image()
 	bool need_resize_left = false;
 	bool need_resize_right = false;
 
-	for (size_t x = 0; x < image.size(); x++)
+	for (size_t y = 0; y < image.size(); y++)
 	{
-		auto& column = image[x];
-		for (size_t y = 0; y < column.size(); y++)
+		auto& row = image[y];
+		for (size_t x = 0; x < row.size(); x++)
 		{
-			char pix = column[y];
+			char pix = row[x];
 
 			if (pix == '1')
 			{
 				if (x == 0)
 					need_resize_left = true;
-				if (x == image.size() - 1)
+				if (x == row.size() - 1)
 					need_resize_right = true;
 				if (y == 0)
 					need_resize_top = true;
-				if (y == column.size() - 1)
+				if (y == image.size() - 1)
 					need_resize_bot = true;
 			}
 		}
 	}
 
-	if (need_resize_left)
-	{
-		image.push_back(std::vector(image[0].size(), '0'));
-		for (size_t x = image.size() - 1; x > 0; x--)
-			image[x] = image[x-1];
-	}
-	if (need_resize_right)
-	{
-		image.push_back(std::vector(image[0].size(), '0'));
-	}
 	if (need_resize_top)
 	{
-		for (auto& column : image)
-		{
-			column.push_back('0');
-			for (size_t y = column.size() - 1; y > 0; y--)
-				column[y] = column[y-1];
-		}
+		image.insert(image.begin(), std::string(image[0].size(), back_ground));
 	}
 	if (need_resize_bot)
 	{
-		for (auto& column : image)
-			column.push_back('0');
+		image.push_back(std::string(image[0].size(), back_ground));
+	}
+	if (need_resize_left)
+	{
+		for (auto& row : image)
+			row.insert(row.begin(), back_ground);
+	}
+	if (need_resize_right)
+	{
+		for (auto& row : image)
+			row.push_back(back_ground);
 	}
 }
 
 void enhance_image()
 {
-	static char back_ground = '0';
 
 	Image output = image;
-	for (int x = 0; x < image.size(); x++)
+	for (int y = 0; y < image.size(); y++)
 	{
-		auto& column = image[x];
-		for (int y = 0; y < column.size(); y++)
+		auto& row = image[y];
+		for (int x = 0; x < row.size(); x++)
 		{
 			std::string neighbors;
 
@@ -138,34 +134,48 @@ void enhance_image()
 				{
 					if (j < 0 || j >= image.size())
 						neighbors.push_back(back_ground);
-					else if (i < 0 || i >= image.size())
+					else if (i < 0 || i >= image[j].size())
 						neighbors.push_back(back_ground);
 					else
-						neighbors.push_back(image[i][j]);
+						neighbors.push_back(image[j][i]);
 				}
 			}
 
-			output[x][y] = program[std::stoi(neighbors, nullptr, 2)];
+			output[y][x] = program[std::stoi(neighbors, nullptr, 2)];
 		}
 	}
 	image = output;
 
+	#if EXAMPLE == 0
 	back_ground = (back_ground - '0') ? '0' : '1';
+	#endif
 }
 
-size_t white_pixels()
+size_t white_pixels(const Image& img)
 {
 	size_t count = 0;
 
-	for (size_t x = 0; x < image.size(); x++)
+	for (size_t y = 0; y < img.size(); y++)
 	{
-		auto& column = image[x];
-		for (size_t y = 0; y < column.size(); y++)
+		auto& row = img[y];
+		for (size_t x = 0; x < row.size(); x++)
 		{
-			if (column[y] == '1')
+			if (row[x] == '1')
 				count++;
 		}
 	}
 
 	return count;
+}
+
+std::ostream& operator<<(std::ostream& os, const Image& img)
+{
+	for (size_t y = 0; y < image.size(); y++)
+	{
+		auto& row = image[y];
+		for (size_t x = 0; x < row.size(); x++)
+			os << (row[x] == '1' ? '#' : '.');
+		os << '\n';
+	}
+	return os;
 }
