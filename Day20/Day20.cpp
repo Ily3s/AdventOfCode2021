@@ -32,7 +32,7 @@ int main()
 
 	get_input();
 	
-	for (ushort i = 0; i < 2+PART*48; i++)
+	for (ushort i = 0; i < 2+(PART-1)*48; i++)
 	{
 		resize_image();
 		enhance_image();
@@ -69,52 +69,13 @@ void get_input()
 
 void resize_image()
 {
-	// if a pixel is white on an edge, this edge need to be resized
+	image.insert(image.begin(), std::string(image[0].size(), back_ground)); // top
+	image.push_back(std::string(image[0].size(), back_ground)); 			// bot
 
-	bool need_resize_top = false;
-	bool need_resize_bot = false;
-	bool need_resize_left = false;
-	bool need_resize_right = false;
-
-	for (size_t y = 0; y < image.size(); y++)
-	{
-		auto& row = image[y];
-		for (size_t x = 0; x < row.size(); x++)
-		{
-			char pix = row[x];
-
-			if (pix == '1')
-			{
-				if (x == 0)
-					need_resize_left = true;
-				if (x == row.size() - 1)
-					need_resize_right = true;
-				if (y == 0)
-					need_resize_top = true;
-				if (y == image.size() - 1)
-					need_resize_bot = true;
-			}
-		}
-	}
-
-	if (need_resize_top)
-	{
-		image.insert(image.begin(), std::string(image[0].size(), back_ground));
-	}
-	if (need_resize_bot)
-	{
-		image.push_back(std::string(image[0].size(), back_ground));
-	}
-	if (need_resize_left)
-	{
-		for (auto& row : image)
-			row.insert(row.begin(), back_ground);
-	}
-	if (need_resize_right)
-	{
-		for (auto& row : image)
-			row.push_back(back_ground);
-	}
+	for (auto& row : image)													// left
+		row.insert(row.begin(), back_ground);
+	for (auto& row : image)
+		row.push_back(back_ground);											// right
 }
 
 void enhance_image()
@@ -153,6 +114,9 @@ void enhance_image()
 
 size_t white_pixels(const Image& img)
 {
+	if (back_ground == '1')
+		return SIZE_MAX;
+	
 	size_t count = 0;
 
 	for (size_t y = 0; y < img.size(); y++)
