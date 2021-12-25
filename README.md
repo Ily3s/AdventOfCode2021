@@ -17,6 +17,6 @@ or as 0 if you want it to take as input the input.txt file
 * Because puzzles 18 to 24 have been sooo hard
 * Beacause my motivation is more ephemeral than an r-value
 
-I ended this AoC with 43/50 stars which is not so bad
+I ended this AoC with 43/50 stars which is not so bad.
 Merry Christmas to those who celebrate it,
 Happy New Year
